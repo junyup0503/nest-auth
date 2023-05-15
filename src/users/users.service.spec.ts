@@ -56,13 +56,22 @@ describe('UsersService', () => {
     it('이미 존재하는 userId', async () => {
       usersRepository.findOne.mockResolvedValue(newUser);
 
-      await expect(usersService.registerUser(newUser)).rejects.toThrow();
-
+      try {
+        await usersService.registerUser(newUser);
+      } catch (error) {
+        expect(error.message).toBe('해당하는 이메일은 이미 존재합니다.');
+      }
       expect(usersRepository.findOne).toHaveBeenCalledWith({
         where: { userId: newUser.userId },
       });
     });
 
-    it('유저 정보를 인자로 받고 새로운 유저 생성 후 유저 정보(pw제외) 반환', () => {});
+    it('유저 정보를 인자로 받고 새로운 유저 생성 후 유저 정보(pw제외) 반환', async () => {
+      usersRepository.findOne.mockReturnValue(undefined);
+
+      await usersService.registerUser(newUser);
+
+      expect(usersRepository.save).toBeCalled();
+    });
   });
 });
